@@ -1,11 +1,13 @@
 const express = require("express");
 const app = express();
 const port = 8080;
+const cors = require("cors");
 
 const videoData = require('./data/video-details.json');
 
 app.use(express.static('public'));
 app.use(express.json());
+app.use(cors());
 
 app.listen(port, () => {
     console.log("Server is now listening on port 8080");
@@ -35,9 +37,8 @@ app.route("/videos")
 
 app.route("/videos/:id")
 .get((req, res) => {
-    res.json(videoData.filter((item) => {
-        return (
-            item.id === req.params.id
-        )
-    }))
+    let videoSelected = videoData.filter(item => {
+        return (item.id === req.params.id)
+    })
+    res.json(videoSelected[0]);
 })
