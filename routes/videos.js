@@ -71,4 +71,51 @@ router.route("/:id")
     })
 })
 
+/*
+* read new video list
+* extract the current video by video id
+* add the new comm object to the curr video's comm array
+* verify good
+* Update the video list array with the updated video object (
+    - is there a replace array fxn? Or else strip out orig with filter and push new one to end? Nah.
+    - indexOf matching element, then just direct replace arr[] = video. Or splice once u know that
+    - Alternative: Access the video item's comment array directly and edit that
+* Write the new videolist arry to file
+*/
+router.route("/:id/comments")
+.post((req, res) => {
+    // read the file to get a fresh videolist
+    // Add the new comment to the video within the list
+    // Finally write the updated videolist to file
+    fs.readFile(dataLocation, 'utf8', (err, data) => {
+        if (err) {
+            console.log("error reading json for comment posting");
+            return res.send(err);
+        }
+
+        // list of all videos
+        const videos = JSON.parse(data);
+        
+        // this will be a direct reference to the video object in the videolist array, not a copy of values
+        let videoMatch = videos.find((vid) => vid.id === req.params.id);
+
+        // Update comments in this video.  Since videoMatch is a reference, then videos list also updated        
+        let commentObj = {
+            id: uuid(),
+            name: req.body.name,
+            comment: req.body.comment,
+            likes: 0,
+            timestamp: Date.now(),
+        }
+        videoMatch.comments.push(commentObj);
+
+        console.log("*** Does this videolist show the update?", videos[0].comments)
+
+
+        return res.send(videoMatch)
+    })
+    
+
+})
+
 module.exports = router;
