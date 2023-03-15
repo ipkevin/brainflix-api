@@ -114,8 +114,41 @@ router.route("/:id/comments")
             return res.status(201).send("Comment written to file");
         })
     })
-    
+})
 
+/*
+* Pull latest videos list
+* Get ref to matching video
+* Find index of matching comment (findIndex()) and splice it out
+* Write update videoslist to file
+*/
+router.route("/:id/comments/:commentId")
+.delete((req, res) => {
+    fs.readFile(dataLocation, 'utf8', (err, data) => {
+        if (err) {
+            return res.status(404).send("Error reading videos from file for comment deletion");
+        }
+        let videos = JSON.parse(data);
+
+        let videoMatch = videos.find((vid) => vid.id === req.params.id);
+        let commentIndex = videoMatch.comments.findIndex((comm) => comm.id === req.params.commentId);
+        
+        // need to check if comment index is -1 as that's the 'does not exist' return value of findIndex 
+        // yet splice() (which will be used next to delete) treats -1 as last element of array
+        if (!commentIndex || commentIndex < 0) {
+            return res.status(400).send("Invalid comment id!");
+        }
+        // Delete the comment from the video's comment array        
+        videoMatch.comments.splice(commentIndex, 1);
+        // Now update the videolist file
+        fs.writeFile(dataLocation, JSON.stringify(videos), (err) => {
+            if (err) {
+                return res.status(400).send("Error writing comment deletion to file");
+            }
+            res.status(200).send(`Comment deleted permanently. Comments for the file: ${videos}`)
+        })
+        
+    })
 })
 
 module.exports = router;
