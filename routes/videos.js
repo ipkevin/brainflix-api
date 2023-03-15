@@ -145,7 +145,7 @@ router.route("/:id/comments/:commentId")
             if (err) {
                 return res.status(400).send("Error writing comment deletion to file");
             }
-            res.status(200).send(`Comment deleted permanently. Comments for the file: ${videos}`)
+            res.status(200).send("Comment deleted permanently.");
         })
         
     })
