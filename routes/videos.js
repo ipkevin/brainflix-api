@@ -77,9 +77,7 @@ router.route("/:id")
 * add the new comm object to the curr video's comm array
 * verify good
 * Update the video list array with the updated video object (
-    - is there a replace array fxn? Or else strip out orig with filter and push new one to end? Nah.
-    - indexOf matching element, then just direct replace arr[] = video. Or splice once u know that
-    - Alternative: Access the video item's comment array directly and edit that
+    - Access the video item's comment array directly and edit that
 * Write the new videolist arry to file
 */
 router.route("/:id/comments")
@@ -109,10 +107,12 @@ router.route("/:id/comments")
         }
         videoMatch.comments.push(commentObj);
 
-        console.log("*** Does this videolist show the update?", videos[0].comments)
-
-
-        return res.send(videoMatch)
+        fs.writeFile(dataLocation, JSON.stringify(videos), (err) => {
+            if (err) {
+                return res.status(400).send("Error writing comment to file");
+            }
+            return res.status(201).send("Comment written to file");
+        })
     })
     
 
