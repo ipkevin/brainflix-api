@@ -4,7 +4,7 @@ const port = 8080;
 const cors = require("cors");
 const videosRoute = require('./routes/videos');
 
-const videoData = require('./data/video-details.json');
+// const videoData = require('./data/video-details.json');
 
 app.use(express.static('public'));
 app.use(express.json());
