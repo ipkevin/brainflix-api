@@ -26,7 +26,6 @@ router.route("/")
     })
 })
 .post((req, res) => {
-    console.log("req body: ", req.body);
     if (req.body){
         let videoData;
         fs.readFile(dataLocation, 'utf8', (err, data) => {
@@ -41,7 +40,6 @@ router.route("/")
                 if (err) {
                     return res.status("error writing file");
                 }
-                console.log("just before sending video added resp");
                 res.status(201).send("video added");
             })
         })
