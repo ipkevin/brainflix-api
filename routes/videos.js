@@ -5,6 +5,7 @@ const {v4: uuid} = require("uuid");
 
 const dataLocation = "./data/video-details.json";
 
+// Get video list and post new video route
 router.route("/")
 .get((req, res) => {
     fs.readFile(dataLocation, 'utf8', (err, data) => {
@@ -48,6 +49,7 @@ router.route("/")
     }
 })
 
+// Get video details route
 router.route("/:id")
 .get((req, res) => {
     fs.readFile(dataLocation, 'utf8', (err, data) => {
@@ -69,15 +71,7 @@ router.route("/:id")
     })
 })
 
-/*
-* read new video list
-* extract the current video by video id
-* add the new comm object to the curr video's comm array
-* verify good
-* Update the video list array with the updated video object (
-    - Access the video item's comment array directly and edit that
-* Write the new videolist arry to file
-*/
+// Post comments route
 router.route("/:id/comments")
 .post((req, res) => {
     // read the file to get a fresh videolist
@@ -114,12 +108,7 @@ router.route("/:id/comments")
     })
 })
 
-/*
-* Pull latest videos list
-* Get ref to matching video
-* Find index of matching comment (findIndex()) and splice it out
-* Write update videoslist to file
-*/
+// Delete comment route
 router.route("/:id/comments/:commentId")
 .delete((req, res) => {
     fs.readFile(dataLocation, 'utf8', (err, data) => {
