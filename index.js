@@ -30,23 +30,23 @@ const upload = multer({
 // Function to check image files are correct type 
 function checkFileType(file, cb) {
     console.log("inside chekc filetype function");
-    // // allowed file extension
-    // const fileTypes = /jpeg|jpg|jfif|png|gif|svg/;
+    // allowed file extension
+    const fileTypes = /jpeg|jpg|jfif|png|gif|svg/;
 
-    // // check extension names
-    // const extName = fileTypes.test(path.extname(file.originalname).toLowerCase());
+    // check extension names
+    const extName = fileTypes.test(path.extname(file.originalname).toLowerCase());
 
     // const mimeType = fileTypes.test(file.mimeType);
 
     // if (mimeType && extName) {
-    //     console.log("in check file success");
-    //     return cb(null, true);
-    // } else {
-    //     console.log("in check file fail");
-    //     console.log("wrong file type uploaded!");
-    //     cb("Error: You can only upload images!")
-    // }
-    return cb(null, true);
+    if (extName) {
+        console.log("in check file success");
+        return cb(null, true);
+    } else {
+        console.log("in check file fail");
+        console.log("wrong file type uploaded!");
+        return cb("Error: You can only upload images!")
+    }
 };
 
 // Use the multer middleware to process image uploads
