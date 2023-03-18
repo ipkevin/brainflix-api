@@ -3,7 +3,55 @@ const router = express.Router();
 const fs = require("fs");
 const {v4: uuid} = require("uuid");
 
+const multer = require("multer");
+const path = require("path"); // used with file upload check
+
 const dataLocation = "./data/video-details.json";
+
+const frontEndFileUrl = "http://localhost:8080/";
+
+
+
+
+// configure multer storage engine to store files
+const storageEngine = multer.diskStorage({
+    destination: "./public",
+    filename: (req, file, cb) => {
+        cb(null, `${Date.now()}--${file.originalname}`)
+    },
+});
+
+// Create multer instance configured to use storageEngine to handle storage
+const upload = multer({
+    storage: storageEngine,
+    limits: { fileSize: 2000000},
+    fileFilter: (req, file, cb) => {
+        checkFileType(file, cb);
+    },
+});
+
+// Function to check image files are correct type 
+function checkFileType(file, cb) {
+    console.log("inside chekc filetype function");
+    // allowed file extension
+    const fileTypes = /jpeg|jpg|jfif|png|gif|svg/;
+
+    // check extension names
+    const extName = fileTypes.test(path.extname(file.originalname).toLowerCase());
+
+    // const mimeType = fileTypes.test(file.mimeType);
+
+    // if (mimeType && extName) {
+    if (extName) {
+        console.log("in check file success");
+        return cb(null, true);
+    } else {
+        console.log("in check file fail");
+        console.log("wrong file type uploaded!");
+        return cb("Error: You can only upload images!")
+    }
+};
+
 
 // Get video list and post new video route
 router.route("/")
@@ -19,35 +67,93 @@ router.route("/")
                     id: video.id,
                     title: video.title,
                     channel: video.channel,
-                    image: video.image
+                    image: frontEndFileUrl+video.image
                 })
             })
             return res.json(videoData);
         }
     })
 })
-.post((req, res) => {
-    if (req.body){
-        let videoData;
+// .post((req, res) => {
+//     if (req.body){
+//         let videoData;
+//         fs.readFile(dataLocation, 'utf8', (err, data) => {
+//             if (err) {
+//                 console.log("error retrieving video list from disk before writing new vid");
+//                 return res.status(404).send(JSON.parse(err));
+//             }
+//             videoData = JSON.parse(data);
+//             videoData.push(req.body);
+
+//             fs.writeFile(dataLocation, JSON.stringify(videoData), (err) => {
+//                 if (err) {
+//                     return res.status("error writing file");
+//                 }
+//                 res.status(201).send("video added");
+//             })
+//         })
+//     } else {
+//         res.status(400).send("No post body received");
+//     }
+// })
+.post(upload.single("image"), (req, res) => {
+    if (req.file) {
+        console.log("*** image file itself was uploaded successfully"); // REMOVE ME
+        let videoObj = {
+            id: uuid(),
+            title: req.body.title,
+            channel: "Moo",
+            image: req.file.filename,
+            description: req.body.description,
+            views: "1,000,000",
+            likes: "188.888",
+            duration: "1:23",
+            video: "https://project-2-api.herokuapp.com/stream",
+            timestamp: Date.now(),
+            comments: []
+        }
+        // get the latest video list 
         fs.readFile(dataLocation, 'utf8', (err, data) => {
             if (err) {
                 console.log("error retrieving video list from disk before writing new vid");
                 return res.status(404).send(JSON.parse(err));
             }
-            videoData = JSON.parse(data);
-            videoData.push(req.body);
+            let videoData = JSON.parse(data);
 
+            // add new video info to the local copy of video list
+            videoData.push(videoObj);
+
+            // write to file by replacing its contents with the local video list
             fs.writeFile(dataLocation, JSON.stringify(videoData), (err) => {
                 if (err) {
                     return res.status("error writing file");
                 }
-                res.status(201).send("video added");
+                res.status(201).send("Video added successfully including image upload!");
             })
         })
     } else {
-        res.status(400).send("No post body received");
+        res.status(400).send("Please upload a valid image");
+    }
+
+})
+
+
+
+// Use the multer middleware to process image uploads
+router.post("/singleimage", upload.single("image"), (req, res) => {
+    if (req.file) {
+        console.log("*** in successs state of singleimage route");
+        console.log("here's req.body and req.file: ", req.body, req.file)
+        res.send("Single file upload successfully");
+    } else {
+        console.log("*** in err state of singleimage route");
+        console.log("here's req.body: ", req.body)
+        res.status(400).send("Please upload a valid image");
     }
 })
+
+
+
 
 // Get video details route
 router.route("/:id")
@@ -64,6 +170,7 @@ router.route("/:id")
         })
 
         if (videoMatch) {
+            videoMatch.image = frontEndFileUrl+videoMatch.image; // add URL for image
             return res.json(videoMatch)
         } else {
             return res.status(404).send(`Could not find matching video for id: ${req.params.id}`);
